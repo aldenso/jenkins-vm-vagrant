@@ -1,6 +1,5 @@
 - hosts: all
   connection: local
-#   user: "vagrant"
   gather_facts: yes
   become: yes
   vars:
