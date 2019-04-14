@@ -17,6 +17,17 @@
     description: azure cli
     baseurl: https://packages.microsoft.com/yumrepos/azure-cli
 
+- name: Download jenkins repo config
+  get_url:
+    url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    dest: /etc/yum.repos.d/jenkins.repo
+    mode: 0755
+
+- name: Install jenkins gpg keys
+  rpm_key:
+    state: present
+    key: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+
 - name: Download jq
   get_url:
     url: https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64
@@ -58,6 +69,7 @@
       # - ansible
       - azure-cli
       - java-1.8.0-openjdk.x86_64
+      - jenkins
 
 - name: create default directories
   file:
@@ -68,6 +80,8 @@
     - "{{ DEFAULT_MAVEN_DIR }}"
     - "{{ DEFAULT_GRADLE_DIR }}"
     - "{{ JENKINS_HOME }}"
+    - "{{ JENKINS_HOME }}/tmp"
+    - "/usr/share/jenkins"
 
 - name: Download maven
   unarchive:
@@ -81,7 +95,39 @@
     dest: "{{ DEFAULT_GRADLE_DIR }}"
     remote_src: yes
 
-- name: Link maven and gradle
+# - name: Download jenkins
+#   unarchive:
+#     src: "https://repo.jenkins-ci.org/public/org/jenkins-ci/main/jenkins-war/{{ JENKINS_VERSION }}/jenkins-war-{{ JENKINS_VERSION }}.war"
+#     dest: "/usr/share/jenkins"
+#     remote_src: yes
+
+# - name: Add the group 'jenkins'
+#   group:
+#     name: "{{ JENKINS_GROUP }}"
+#     gid: "{{ JENKINS_GUID }}"
+#     state: present
+
+# - name: Add the user 'jenkins'
+#   user:
+#     name: "{{ JENKINS_USER }}"
+#     comment: user for Jenkins
+#     uid: "{{ JENKINS_UID }}"
+#     group: "{{ JENKINS_GROUP }}"
+#     home: "{{ JENKINS_HOME }}"
+#     state: present
+
+- name: Change directories ownership
+  file:
+    path: "{{ item }}"
+    owner: "{{ JENKINS_USER }}"
+    group: "{{ JENKINS_GROUP }}"
+  with_items:
+    - "{{ JENKINS_HOME }}"
+    - "/opt"
+    # - "/usr/share/jenkins"
+    - "/etc/ansible"
+
+- name: Link maven, gradle and jenkins
   file:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -89,3 +135,10 @@
   with_items:
     - { src: "{{ DEFAULT_MAVEN_DIR }}/apache-maven-{{ MAVEN_VERSION }}/bin/mvn", dest: "/usr/bin/mvn" }
     - { src: "{{ DEFAULT_GRADLE_DIR }}/gradle-{{ GRADLE_VERSION }}/bin/gradle", dest: "/usr/bin/gradle" }
+    # - { src: "/usr/share/jenkins/jenkins-war-{{ JENKINS_VERSION }}", dest: "/usr/share/jenkins/jenkins.war" }
+
+- name: enable a jenkins service
+  systemd:
+    name: jenkins
+    state: started
+    enabled: yes
