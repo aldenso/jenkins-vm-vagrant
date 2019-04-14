@@ -1,0 +1,14 @@
+- hosts: all
+  connection: local
+#   user: "vagrant"
+  gather_facts: yes
+  become: yes
+  vars:
+    MAVEN_VERSION: "3.5.4"
+    DEFAULT_MAVEN_DIR: "/opt/maven"
+    GRADLE_VERSION: "4.3"
+    DEFAULT_GRADLE_DIR: "/opt/gradle"
+    JENKINS_VERSION: "2.107.3"
+    JENKINS_HOME: "/var/jenkins_home"
+  roles:
+    - { role: install-jenkins }
