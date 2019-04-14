@@ -8,11 +8,7 @@
     DEFAULT_MAVEN_DIR: "/opt/maven"
     GRADLE_VERSION: "4.3"
     DEFAULT_GRADLE_DIR: "/opt/gradle"
-    JENKINS_VERSION: "2.164.2"
-    JENKINS_HOME: "/var/jenkins_home"
     JENKINS_USER: "jenkins"
     JENKINS_GROUP: "jenkins"
-    JENKINS_UID: "2000"
-    JENKINS_GUID: "2000"
   roles:
     - { role: install-jenkins }
